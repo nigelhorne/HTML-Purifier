@@ -9,75 +9,18 @@ our $VERSION = '1.00';
 
 =head1 NAME
 
-HTML::Sanitizer - Basic HTML sanitization for Perl
+HTML::Sanitizer - Basic HTML sanitization
 
 =head1 VERSION
 
 Version 1.00
 
-=head1 SYNOPSIS
-
-    use HTML::Sanitizer;
-
-    my $sanitizer = HTML::Sanitizer->new(
-        allow_tags => [qw(p b i a)],
-        allow_attributes => {
-            a => [qw(href title)],
-        },
-    );
-
-    my $input_html = '<p><b>Hello, <script>alert("XSS");</script></b> <a href="javascript:void(0);">world</a></p>';
-    my $sanitized_html = $sanitizer->sanitize($input_html);
-
-    print $sanitized_html;
-
 =head1 DESCRIPTION
 
-HTML::Sanitizer provides basic HTML sanitization capabilities for Perl. It allows you to define a whitelist of allowed tags and attributes, and it removes or encodes any HTML that is not on the whitelist. This helps to prevent cross-site scripting (XSS) vulnerabilities.
+HTML::Sanitizer provides basic HTML sanitization capabilities.
+It allows you to define a whitelist of allowed tags and attributes, and it removes or encodes any HTML that is not on the whitelist. This helps to prevent cross-site scripting (XSS) vulnerabilities.
 
-=head1 CONSTRUCTOR
-
-=head2 new(%args)
-
-Creates a new HTML::Sanitizer object.
-
-=over 4
-
-=item allow_tags
-
-An array reference containing the allowed HTML tags (case-insensitive).
-
-=item allow_attributes
-
-A hash reference where the keys are allowed tags (lowercase), and the values are array references of allowed attributes for that tag.
-
-=item strip_comments
-
-A boolean value (default: 1) indicating whether HTML comments should be removed.
-
-=item encode_invalid_tags
-
-A boolean value (default: 1) indicating whether invalid tags should be encoded or removed.
-
-=back
-
-=head1 METHODS
-
-=head2 sanitize($html)
-
-Sanitizes the given HTML string.
-
-=over 4
-
-=item $html
-
-The HTML string to be sanitized.
-
-=back
-
-Returns the sanitized HTML string.
-
-=head1 EXAMPLES
+=head1 SYNOPSIS
 
 =head2 Basic Usage
 
@@ -129,6 +72,31 @@ Returns the sanitized HTML string.
 
     print $sanitized_html; # Output: &lt;my-custom-tag&gt;Hello&lt;/my-custom-tag&gt;
 
+=head1 METHODS
+
+=head2 new(%args)
+
+Creates a new HTML::Sanitizer object.
+
+=over 4
+
+=item allow_tags
+
+An array reference containing the allowed HTML tags (case-insensitive).
+
+=item allow_attributes
+
+A hash reference where the keys are allowed tags (lowercase), and the values are array references of allowed attributes for that tag.
+
+=item strip_comments
+
+A boolean value (default: 1) indicating whether HTML comments should be removed.
+
+=item encode_invalid_tags
+
+A boolean value (default: 1) indicating whether invalid tags should be encoded or removed.
+
+=back
 
 =cut
 
@@ -143,6 +111,22 @@ sub new {
     bless $self, $class;
     return $self;
 }
+
+=head2 sanitize($html)
+
+Sanitizes the given HTML string.
+
+=over 4
+
+=item $html
+
+The HTML string to be sanitized.
+
+=back
+
+Returns the sanitized HTML string.
+
+=cut
 
 sub sanitize {
     my ($self, $html) = @_;
