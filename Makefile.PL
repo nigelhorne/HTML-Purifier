@@ -12,8 +12,8 @@ if($^O eq 'darwin') {
 }
 
 WriteMakefile(
-	ABSTRACT_FROM	=> 'lib/HTML/Sanitizer.pm',
-	AUTHOR => 'Nigel Horne <njh@bandsman.co.uk>',
+	ABSTRACT_FROM => 'lib/HTML/Sanitizer.pm',
+	AUTHOR => 'Nigel Horne <njh@nigelhorne.com>',
 	NAME => 'HTML::Sanitizer',
 	VERSION_FROM => 'lib/HTML/Sanitizer.pm', # finds $VERSION in the module
 	((defined($ExtUtils::MakeMaker::VERSION) && ($ExtUtils::MakeMaker::VERSION >= 6.3002))
@@ -21,6 +21,8 @@ WriteMakefile(
 		: ()),
 	PREREQ_PM => {
 		'ExtUtils::MakeMaker' => 6.64,	# Minimum version for TEST_REQUIRES
+		'HTML::Parser' => 0,
+		'HTML::Entities' => 0,
 		'Carp' => 0,
 	},
 	META_MERGE => {
@@ -42,5 +44,5 @@ WriteMakefile(
 		'Test::Needs' => 0,
 		'Test::Warnings' => 0
 	}, dist => $dist,
-	clean => { FILES => 'HTML-Sanitizer-*' },  # Clean up distribution files
+	clean => { FILES => 'HTML-Sanitizer-*' },	# Clean up distribution files
 );

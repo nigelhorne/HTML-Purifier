@@ -2,10 +2,11 @@ package HTML::Sanitizer;
 
 use strict;
 use warnings;
+
 use HTML::Parser;
 use HTML::Entities qw(encode_entities);
 
-our $VERSION = '1.00';
+our $VERSION = '0.01';
 
 =head1 NAME
 
@@ -18,59 +19,60 @@ Version 1.00
 =head1 DESCRIPTION
 
 HTML::Sanitizer provides basic HTML sanitization capabilities.
-It allows you to define a whitelist of allowed tags and attributes, and it removes or encodes any HTML that is not on the whitelist. This helps to prevent cross-site scripting (XSS) vulnerabilities.
+It allows you to define a whitelist of allowed tags and attributes, and it removes or encodes any HTML that is not on the whitelist.
+This helps to prevent cross-site scripting (XSS) vulnerabilities.
 
 =head1 SYNOPSIS
 
 =head2 Basic Usage
 
-	use HTML::Sanitizer;
+  use HTML::Sanitizer;
 
-	my $sanitizer = HTML::Sanitizer->new(
-		allow_tags => [qw(p b i a)],
-		allow_attributes => {
-			a => [qw(href title)],
-		},
-	);
+  my $sanitizer = HTML::Sanitizer->new(
+    allow_tags => [qw(p b i a)],
+    allow_attributes => {
+      a => [qw(href title)],
+    },
+  );
 
-	my $input_html = '<p><b>Hello, <script>alert("XSS");</script></b> <a href="javascript:void(0);">world</a></p>';
-	my $sanitized_html = $sanitizer->sanitize($input_html);
+  my $input_html = '<p><b>Hello, <script>alert("XSS");</script></b> <a href="javascript:void(0);">world</a></p>';
+  my $sanitized_html = $sanitizer->sanitize($input_html);
 
-	print $sanitized_html; # Output: <p><b>Hello, </b> <a href="world">world</a></p>
+  print $sanitized_html; # Output: <p><b>Hello, </b> <a href="world">world</a></p>
 
 =head2 Allowing Comments
 
-	use HTML::Sanitizer;
+  use HTML::Sanitizer;
 
-	my $sanitizer = HTML::Sanitizer->new(
-		allow_tags => [qw(p b i a)],
-		allow_attributes => {
-			a => [qw(href title)],
-		},
-		strip_comments => 0, # Do not strip comments
-	);
+  my $sanitizer = HTML::Sanitizer->new(
+    allow_tags => [qw(p b i a)],
+    allow_attributes => {
+      a => [qw(href title)],
+    },
+    strip_comments => 0, # Do not strip comments
+  );
 
-	my $input_html = '<p><b>Hello, </b></p>';
-	my $sanitized_html = $sanitizer->sanitize($input_html);
+  my $input_html = '<p><b>Hello, </b></p>';
+  my $sanitized_html = $sanitizer->sanitize($input_html);
 
-	print $sanitized_html; # Output: <p><b>Hello, </b></p>
+  print $sanitized_html; # Output: <p><b>Hello, </b></p>
 
 =head2 Encoding Invalid Tags
 
-	use HTML::Sanitizer;
+  use HTML::Sanitizer;
 
-	my $sanitizer = HTML::Sanitizer->new(
-		allow_tags => [qw(p b i a)],
-		allow_attributes => {
-			a => [qw(href title)],
-		},
-		encode_invalid_tags => 1, # Encode invalid tags.
-	);
+  my $sanitizer = HTML::Sanitizer->new(
+    allow_tags => [qw(p b i a)],
+    allow_attributes => {
+      a => [qw(href title)],
+    },
+    encode_invalid_tags => 1, # Encode invalid tags.
+  );
 
-	my $input_html = '<my-custom-tag>Hello</my-custom-tag>';
-	my $sanitized_html = $sanitizer->sanitize($input_html);
+  my $input_html = '<my-custom-tag>Hello</my-custom-tag>';
+  my $sanitized_html = $sanitizer->sanitize($input_html);
 
-	print $sanitized_html; # Output: &lt;my-custom-tag&gt;Hello&lt;/my-custom-tag&gt;
+  print $sanitized_html; # Output: &lt;my-custom-tag&gt;Hello&lt;/my-custom-tag&gt;
 
 =head1 METHODS
 
@@ -129,78 +131,84 @@ Returns the sanitized HTML string.
 =cut
 
 sub sanitize {
-    my ($self, $html) = @_;
-    my $output = '';
-    my $skip_content = 0;
+	my ($self, $html) = @_;
+	my $output = '';
+	my $skip_content = 0;
+	my @stack;
 
-    my $parser = HTML::Parser->new(
-        handlers => {
-            start => [ sub {
-                my ($tag, $attr, $text) = @_;
-                my $lc_tag = lc $tag;
+	my $parser = HTML::Parser->new(
+		api_version => 3,
+		marked_sections => 1,
+		handlers => {
+			start => [ sub {
+				my ($tag, $attr, $text) = @_;
+				my $lc_tag = lc $tag;
 
-                # Drop <script>/<style> completely
-                if ($lc_tag eq 'script' || $lc_tag eq 'style') {
-                    $skip_content = 1;
-                    return;
-                }
+				if ($lc_tag eq 'script' || $lc_tag eq 'style') {
+					$skip_content = 1;
+					push @stack, $lc_tag;
+					return;
+				}
 
-                if (grep { lc $_ eq $lc_tag } @{$self->{allow_tags}}) {
-                    $output .= "<$lc_tag";
-                    foreach my $attr_name (keys %$attr) {
-                        my $lc_attr = lc $attr_name;
-                        if (exists $self->{allow_attributes}->{$lc_tag}
-                            && grep { lc $_ eq $lc_attr } @{$self->{allow_attributes}->{$lc_tag}}) {
-                            $output .= " $lc_attr=\"" . encode_entities($attr->{$attr_name}) . "\"";
-                        }
-                    }
-                    $output .= '>';
-                }
-                elsif ($self->{encode_invalid_tags}) {
-                    $output .= encode_entities("<$tag" . (join " ", map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">");
-                }
-                # else: drop tag but keep content
-            }, "tagname, attr, text"],
+				if (grep { lc $_ eq $lc_tag } @{$self->{allow_tags}}) {
+					$output .= "<$lc_tag";
+					foreach my $attr_name (keys %$attr) {
+						my $lc_attr = lc $attr_name;
+						if (exists $self->{allow_attributes}->{$lc_tag}
+							&& grep { lc $_ eq $lc_attr } @{$self->{allow_attributes}->{$lc_tag}}) {
+							$output .= " $lc_attr=\"" . encode_entities($attr->{$attr_name}) . "\"";
+						}
+					}
+					$output .= '>';
+					push @stack, $lc_tag;
+				}
+				elsif ($self->{encode_invalid_tags}) {
+					$output .= encode_entities("<$tag" . (join " ", map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">");
+				}
+			}, "tagname, attr, text"],
 
-            end => [ sub {
-                my ($tag, $text) = @_;
-                my $lc_tag = lc $tag;
+			end => [ sub {
+				my ($tag, $text) = @_;
+				my $lc_tag = lc $tag;
 
-                if ($lc_tag eq 'script' || $lc_tag eq 'style') {
-                    $skip_content = 0;
-                    return;
-                }
+				if ($skip_content && $lc_tag eq $stack[-1]) {
+					pop @stack;
+					$skip_content = 0;
+					return;
+				}
 
-                if (grep { lc $_ eq $lc_tag } @{$self->{allow_tags}}) {
-                    $output .= "</$lc_tag>";
-                }
-                elsif ($self->{encode_invalid_tags}) {
-                    $output .= encode_entities("</$tag>");
-                }
-                # else: drop invalid end tag silently
-            }, "tagname, text"],
+				if (grep { lc $_ eq $lc_tag } @{$self->{allow_tags}}) {
+					# Close only if it was opened
+					if ($stack[-1] && $stack[-1] eq $lc_tag) {
+						$output .= "</$lc_tag>";
+						pop @stack;
+					}
+				}
+				elsif ($self->{encode_invalid_tags}) {
+					$output .= encode_entities("</$tag>");
+				}
+			}, "tagname, text"],
 
-            text => [ sub {
-                my ($text) = @_;
-                return if $skip_content;
-                $output .= encode_entities($text);
-            }, "text"],
+			text => [ sub {
+				my ($text) = @_;
+				return if $skip_content;
+				$output .= encode_entities($text);
+			}, "text"],
 
-            comment => [ sub {
-                my ($comment) = @_;
-                if (!$self->{strip_comments}) {
-                    $comment =~ s/^<!--\s*//;
-                    $comment =~ s/\s*-->$//;
-                    $output .= "<!-- $comment -->";
-                }
-            }, "text"],
-        },
-        marked_sections => 1,
-    );
+			comment => [ sub {
+				my ($comment) = @_;
+				if (!$self->{strip_comments}) {
+					$comment =~ s/^<!--\s*//;
+					$comment =~ s/\s*-->$//;
+					$output .= "<!-- $comment -->";
+				}
+			}, "text"],
+		}
+	);
 
-    $parser->parse($html);
-    $parser->eof;
-    return $output;
+	$parser->parse($html);
+	$parser->eof;
+	return $output;
 }
 
 1;
