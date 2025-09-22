@@ -24,53 +24,53 @@ It allows you to define a whitelist of allowed tags and attributes, and it remov
 
 =head2 Basic Usage
 
-    use HTML::Sanitizer;
+	use HTML::Sanitizer;
 
-    my $sanitizer = HTML::Sanitizer->new(
-        allow_tags => [qw(p b i a)],
-        allow_attributes => {
-            a => [qw(href title)],
-        },
-    );
+	my $sanitizer = HTML::Sanitizer->new(
+		allow_tags => [qw(p b i a)],
+		allow_attributes => {
+			a => [qw(href title)],
+		},
+	);
 
-    my $input_html = '<p><b>Hello, <script>alert("XSS");</script></b> <a href="javascript:void(0);">world</a></p>';
-    my $sanitized_html = $sanitizer->sanitize($input_html);
+	my $input_html = '<p><b>Hello, <script>alert("XSS");</script></b> <a href="javascript:void(0);">world</a></p>';
+	my $sanitized_html = $sanitizer->sanitize($input_html);
 
-    print $sanitized_html; # Output: <p><b>Hello, </b> <a href="world">world</a></p>
+	print $sanitized_html; # Output: <p><b>Hello, </b> <a href="world">world</a></p>
 
 =head2 Allowing Comments
 
-    use HTML::Sanitizer;
+	use HTML::Sanitizer;
 
-    my $sanitizer = HTML::Sanitizer->new(
-        allow_tags => [qw(p b i a)],
-        allow_attributes => {
-            a => [qw(href title)],
-        },
-        strip_comments => 0, # Do not strip comments
-    );
+	my $sanitizer = HTML::Sanitizer->new(
+		allow_tags => [qw(p b i a)],
+		allow_attributes => {
+			a => [qw(href title)],
+		},
+		strip_comments => 0, # Do not strip comments
+	);
 
-    my $input_html = '<p><b>Hello, </b></p>';
-    my $sanitized_html = $sanitizer->sanitize($input_html);
+	my $input_html = '<p><b>Hello, </b></p>';
+	my $sanitized_html = $sanitizer->sanitize($input_html);
 
-    print $sanitized_html; # Output: <p><b>Hello, </b></p>
+	print $sanitized_html; # Output: <p><b>Hello, </b></p>
 
 =head2 Encoding Invalid Tags
 
-    use HTML::Sanitizer;
+	use HTML::Sanitizer;
 
-    my $sanitizer = HTML::Sanitizer->new(
-        allow_tags => [qw(p b i a)],
-        allow_attributes => {
-            a => [qw(href title)],
-        },
-        encode_invalid_tags => 1, # Encode invalid tags.
-    );
+	my $sanitizer = HTML::Sanitizer->new(
+		allow_tags => [qw(p b i a)],
+		allow_attributes => {
+			a => [qw(href title)],
+		},
+		encode_invalid_tags => 1, # Encode invalid tags.
+	);
 
-    my $input_html = '<my-custom-tag>Hello</my-custom-tag>';
-    my $sanitized_html = $sanitizer->sanitize($input_html);
+	my $input_html = '<my-custom-tag>Hello</my-custom-tag>';
+	my $sanitized_html = $sanitizer->sanitize($input_html);
 
-    print $sanitized_html; # Output: &lt;my-custom-tag&gt;Hello&lt;/my-custom-tag&gt;
+	print $sanitized_html; # Output: &lt;my-custom-tag&gt;Hello&lt;/my-custom-tag&gt;
 
 =head1 METHODS
 
@@ -101,15 +101,15 @@ A boolean value (default: 1) indicating whether invalid tags should be encoded o
 =cut
 
 sub new {
-    my ($class, %args) = @_;
-    my $self = {
-        allow_tags => $args{allow_tags} || [],
-        allow_attributes => $args{allow_attributes} || {},
-        strip_comments => $args{strip_comments} // 1, # Default to stripping comments
-        encode_invalid_tags => $args{encode_invalid_tags} // 1, # Default to encoding invalid tags
-    };
-    bless $self, $class;
-    return $self;
+	my ($class, %args) = @_;
+	my $self = {
+		allow_tags => $args{allow_tags} || [],
+		allow_attributes => $args{allow_attributes} || {},
+		strip_comments => $args{strip_comments} // 1, # Default to stripping comments
+		encode_invalid_tags => $args{encode_invalid_tags} // 1, # Default to encoding invalid tags
+	};
+	bless $self, $class;
+	return $self;
 }
 
 =head2 sanitize($html)
@@ -131,57 +131,54 @@ Returns the sanitized HTML string.
 sub sanitize {
     my ($self, $html) = @_;
     my $output = '';
+
     my $parser = HTML::Parser->new(
         handlers => {
-            start => [\&start_handler, "tagname, attr, text"],
-            end => [\&end_handler, "tagname"],
-            text => [\&text_handler, "text"],
-            comment => [\&comment_handler, "text"],
+            start => [ sub {
+                my ($tag, $attr, $text) = @_;
+                if (grep { lc $_ eq lc $tag } @{$self->{allow_tags}}) {
+                    $output .= "<$tag";
+                    foreach my $attr_name (keys %$attr) {
+                        if (exists $self->{allow_attributes}->{lc $tag}
+                            && grep { lc $_ eq lc $attr_name } @{$self->{allow_attributes}->{lc $tag}}) {
+                            $output .= " $attr_name=\"" . encode_entities($attr->{$attr_name}) . "\"";
+                        }
+                    }
+                    $output .= '>';
+                } elsif ($self->{encode_invalid_tags}) {
+                    $output .= encode_entities(
+                        "<$tag" . (join " ", map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">"
+                    );
+                }
+            }, "tagname, attr, text"],
+
+            end => [ sub {
+                my ($tag) = @_;
+                if (grep { lc $_ eq lc $tag } @{$self->{allow_tags}}) {
+                    $output .= "</$tag>";
+                } elsif ($self->{encode_invalid_tags}) {
+                    $output .= encode_entities("</$tag>");
+                }
+            }, "tagname"],
+
+            text => [ sub {
+                my ($text) = @_;
+                $output .= encode_entities($text);
+            }, "text"],
+
+            comment => [ sub {
+                my ($text) = @_;
+                if (!$self->{strip_comments}) {
+                    $output .= "<!--$text-->";
+                }
+            }, "text"],
         },
         marked_sections => 1,
     );
+
     $parser->parse($html);
-    $parser->eof();
+    $parser->eof;
     return $output;
-
-    sub start_handler {
-        my ($tag, $attr, $text) = @_;
-	::diag($tag);
-        if (grep { lc $_ eq lc $tag } @{$self->{allow_tags}}) {
-	::diag(__LINE__);
-            $output .= "<$tag";
-            foreach my $attr_name (keys %$attr) {
-                if (exists $self->{allow_attributes}->{lc $tag} && grep { lc $_ eq lc $attr_name } @{$self->{allow_attributes}->{lc $tag}}) {
-                    $output .= " $attr_name=\"" . encode_entities($attr->{$attr_name}) . "\"";
-                }
-            }
-            $output .= ">";
-        } elsif($self->{encode_invalid_tags}) {
-	::diag(__LINE__);
-          $output .= encode_entities("<$tag" . (join " ", map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">");
-        }
-    }
-
-    sub end_handler {
-        my ($tag) = @_;
-        if (grep { lc $_ eq lc $tag } @{$self->{allow_tags}}) {
-            $output .= "</$tag>";
-        } elsif($self->{encode_invalid_tags}) {
-          $output .= encode_entities("</$tag>");
-        }
-    }
-
-    sub text_handler {
-        my ($text) = @_;
-        $output .= encode_entities($text);
-    }
-
-    sub comment_handler {
-        my ($text) = @_;
-        if (!$self->{strip_comments}) {
-            $output .= "";
-        }
-    }
 }
 
 1;
