@@ -136,12 +136,14 @@ sub sanitize {
         handlers => {
             start => [ sub {
                 my ($tag, $attr, $text) = @_;
-                if (grep { lc $_ eq lc $tag } @{$self->{allow_tags}}) {
-                    $output .= "<$tag";
+                my $lc_tag = lc $tag;
+                if (grep { lc $_ eq $lc_tag } @{$self->{allow_tags}}) {
+                    $output .= "<$lc_tag";
                     foreach my $attr_name (keys %$attr) {
-                        if (exists $self->{allow_attributes}->{lc $tag}
-                            && grep { lc $_ eq lc $attr_name } @{$self->{allow_attributes}->{lc $tag}}) {
-                            $output .= " $attr_name=\"" . encode_entities($attr->{$attr_name}) . "\"";
+                        my $lc_attr = lc $attr_name;
+                        if (exists $self->{allow_attributes}->{$lc_tag}
+                            && grep { lc $_ eq $lc_attr } @{$self->{allow_attributes}->{$lc_tag}}) {
+                            $output .= " $lc_attr=\"" . encode_entities($attr->{$attr_name}) . "\"";
                         }
                     }
                     $output .= '>';
@@ -150,15 +152,18 @@ sub sanitize {
                         "<$tag" . (join " ", map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">"
                     );
                 }
+                # else: disallowed and not encoded => drop tag but keep contents
             }, "tagname, attr, text"],
 
             end => [ sub {
                 my ($tag) = @_;
-                if (grep { lc $_ eq lc $tag } @{$self->{allow_tags}}) {
-                    $output .= "</$tag>";
+                my $lc_tag = lc $tag;
+                if (grep { lc $_ eq $lc_tag } @{$self->{allow_tags}}) {
+                    $output .= "</$lc_tag>";
                 } elsif ($self->{encode_invalid_tags}) {
                     $output .= encode_entities("</$tag>");
                 }
+                # else drop silently
             }, "tagname"],
 
             text => [ sub {
@@ -180,6 +185,7 @@ sub sanitize {
     $parser->eof;
     return $output;
 }
+
 
 1;
 
