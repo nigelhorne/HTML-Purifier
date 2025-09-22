@@ -131,8 +131,8 @@ Returns the sanitized HTML string.
 sub sanitize {
     my ($self, $html) = @_;
     my $output = '';
-    my @tag_stack;   # track open tags
-    my $skip_content = 0; # skip text inside <script> etc.
+    my @tag_stack;      # track open tags
+    my $skip_content=0; # skip text inside <script>/<style>
 
     my $parser = HTML::Parser->new(
         handlers => {
@@ -140,10 +140,10 @@ sub sanitize {
                 my ($tag, $attr, $text) = @_;
                 my $lc_tag = lc $tag;
 
-                # drop script/style content entirely
+                # Drop <script>/<style> completely (and contents)
                 if ($lc_tag eq 'script' || $lc_tag eq 'style') {
                     $skip_content = 1;
-                    push @tag_stack, undef; # mark ignored
+                    push @tag_stack, undef;
                     return;
                 }
 
@@ -158,35 +158,40 @@ sub sanitize {
                     }
                     $output .= '>';
                     push @tag_stack, $lc_tag;
-                } elsif ($self->{encode_invalid_tags}) {
+                }
+                elsif ($self->{encode_invalid_tags}) {
                     $output .= encode_entities($text);
-                } else {
-                    push @tag_stack, undef; # disallowed but don’t encode
+                }
+                else {
+                    # drop invalid tag entirely but keep inner text
+                    return;
                 }
             }, "tagname, attr, text"],
 
             end => [ sub {
                 my ($tag, $text) = @_;
                 my $lc_tag = lc $tag;
-                my $open = pop @tag_stack;
 
                 # stop skipping after </script> or </style>
                 if ($lc_tag eq 'script' || $lc_tag eq 'style') {
                     $skip_content = 0;
+                    pop @tag_stack;
                     return;
                 }
 
-                if (defined $open && $open eq $lc_tag) {
+                my $open = pop @tag_stack;
+
+                # Only output explicit end tags from input, not implied ones
+                if (defined $open && $open eq $lc_tag && $text =~ m{</}i) {
                     $output .= "</$lc_tag>";
-                } elsif (!defined $open && $self->{encode_invalid_tags}) {
-                    $output .= encode_entities($text);
                 }
+                # else: ignore silently (invalid or implied closing)
             }, "tagname, text"],
 
             text => [ sub {
                 my ($text) = @_;
-                return if $skip_content; # drop script/style text
-                # only emit text if not inside a disallowed tag
+                return if $skip_content; # skip script/style text
+                # only emit text if not inside disallowed tag
                 if (!@tag_stack || defined $tag_stack[-1]) {
                     $output .= encode_entities($text);
                 }
@@ -195,7 +200,7 @@ sub sanitize {
             comment => [ sub {
                 my ($comment) = @_;
                 if (!$self->{strip_comments}) {
-                    # ensure single wrapping, normalized spacing
+                    # normalize so we don’t double-wrap
                     $comment =~ s/^<!--\s*//;
                     $comment =~ s/\s*-->$//;
                     $output .= "<!-- $comment -->";
@@ -209,6 +214,7 @@ sub sanitize {
     $parser->eof;
     return $output;
 }
+
 
 1;
 
