@@ -146,7 +146,9 @@ sub sanitize {
 
     sub start_handler {
         my ($tag, $attr, $text) = @_;
+	::diag($tag);
         if (grep { lc $_ eq lc $tag } @{$self->{allow_tags}}) {
+	::diag(__LINE__);
             $output .= "<$tag";
             foreach my $attr_name (keys %$attr) {
                 if (exists $self->{allow_attributes}->{lc $tag} && grep { lc $_ eq lc $attr_name } @{$self->{allow_attributes}->{lc $tag}}) {
@@ -155,6 +157,7 @@ sub sanitize {
             }
             $output .= ">";
         } elsif($self->{encode_invalid_tags}) {
+	::diag(__LINE__);
           $output .= encode_entities("<$tag" . (join " ", map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">");
         }
     }
