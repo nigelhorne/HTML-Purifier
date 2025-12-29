@@ -4,12 +4,13 @@ HTML::Sanitizer - Basic HTML sanitization
 
 # VERSION
 
-Version 1.00
+Version 0.01
 
 # DESCRIPTION
 
 HTML::Sanitizer provides basic HTML sanitization capabilities.
-It allows you to define a whitelist of allowed tags and attributes, and it removes or encodes any HTML that is not on the whitelist. This helps to prevent cross-site scripting (XSS) vulnerabilities.
+It allows you to define a whitelist of allowed tags and attributes, and it removes or encodes any HTML that is not on the whitelist.
+This helps to prevent cross-site scripting (XSS) vulnerabilities.
 
 # SYNOPSIS
 
@@ -18,10 +19,10 @@ It allows you to define a whitelist of allowed tags and attributes, and it remov
     use HTML::Sanitizer;
 
     my $sanitizer = HTML::Sanitizer->new(
-        allow_tags => [qw(p b i a)],
-        allow_attributes => {
-            a => [qw(href title)],
-        },
+      allow_tags => [qw(p b i a)],
+      allow_attributes => {
+        a => [qw(href title)],
+      },
     );
 
     my $input_html = '<p><b>Hello, <script>alert("XSS");</script></b> <a href="javascript:void(0);">world</a></p>';
@@ -34,11 +35,11 @@ It allows you to define a whitelist of allowed tags and attributes, and it remov
     use HTML::Sanitizer;
 
     my $sanitizer = HTML::Sanitizer->new(
-        allow_tags => [qw(p b i a)],
-        allow_attributes => {
-            a => [qw(href title)],
-        },
-        strip_comments => 0, # Do not strip comments
+      allow_tags => [qw(p b i a)],
+      allow_attributes => {
+        a => [qw(href title)],
+      },
+      strip_comments => 0, # Do not strip comments
     );
 
     my $input_html = '<p><b>Hello, </b></p>';
@@ -51,11 +52,11 @@ It allows you to define a whitelist of allowed tags and attributes, and it remov
     use HTML::Sanitizer;
 
     my $sanitizer = HTML::Sanitizer->new(
-        allow_tags => [qw(p b i a)],
-        allow_attributes => {
-            a => [qw(href title)],
-        },
-        encode_invalid_tags => 1, # Encode invalid tags.
+      allow_tags => [qw(p b i a)],
+      allow_attributes => {
+        a => [qw(href title)],
+      },
+      encode_invalid_tags => 1, # Encode invalid tags.
     );
 
     my $input_html = '<my-custom-tag>Hello</my-custom-tag>';
@@ -102,7 +103,8 @@ Returns the sanitized HTML string.
 
 # CAVEATS
 
-This is a basic HTML sanitizer. For production environments, consider using more mature and actively maintained libraries like `http://htmlpurifier.org/` or [Mojolicious::Plugin::TagHelpers](https://metacpan.org/pod/Mojolicious%3A%3APlugin%3A%3ATagHelpers).
+This is a basic HTML sanitizer.
+For production environments, consider using more mature and actively maintained libraries like `http://htmlpurifier.org/` or [Mojolicious::Plugin::TagHelpers](https://metacpan.org/pod/Mojolicious%3A%3APlugin%3A%3ATagHelpers).
 
 # AUTHOR
 

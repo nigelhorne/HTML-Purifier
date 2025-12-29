@@ -14,7 +14,7 @@ HTML::Sanitizer - Basic HTML sanitization
 
 =head1 VERSION
 
-Version 1.00
+Version 0.01
 
 =head1 DESCRIPTION
 
@@ -220,7 +220,8 @@ sub sanitize {
 
 =head1 CAVEATS
 
-This is a basic HTML sanitizer. For production environments, consider using more mature and actively maintained libraries like C<http://htmlpurifier.org/> or L<Mojolicious::Plugin::TagHelpers>.
+This is a basic HTML sanitizer.
+For production environments, consider using more mature and actively maintained libraries like C<http://htmlpurifier.org/> or L<Mojolicious::Plugin::TagHelpers>.
 
 =head1 AUTHOR
 
