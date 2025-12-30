@@ -20,10 +20,12 @@ WriteMakefile(
 		? ('LICENSE'=> 'GPL')
 		: ()),
 	PREREQ_PM => {
+		'Carp' => 0,
 		'ExtUtils::MakeMaker' => 6.64,	# Minimum version for TEST_REQUIRES
 		'HTML::Parser' => 0,
 		'HTML::Entities' => 0,
-		'Carp' => 0,
+		'Params::Get' => 0,
+		'Params::Validate::Strict' => 0,
 	},
 	META_MERGE => {
 		resources => {

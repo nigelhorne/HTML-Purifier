@@ -5,6 +5,8 @@ use warnings;
 
 use HTML::Parser;
 use HTML::Entities qw(encode_entities);
+use Params::Get;
+use Params::Validate::Strict;
 
 our $VERSION = '0.01';
 
@@ -103,15 +105,32 @@ A boolean value (default: 1) indicating whether invalid tags should be encoded o
 =cut
 
 sub new {
-	my ($class, %args) = @_;
-	my $self = {
-		allow_tags => $args{allow_tags} || [],
-		allow_attributes => $args{allow_attributes} || {},
-		strip_comments => $args{strip_comments} // 1, # Default to stripping comments
-		encode_invalid_tags => $args{encode_invalid_tags} // 1, # Default to encoding invalid tags
-	};
-	bless $self, $class;
-	return $self;
+	my $class = shift;
+	my $params = Params::Validate::Strict::validate_strict({
+		args => Params::Get::get_params(undef, \@_),
+		schema => {
+			allow_tags => {
+				type => 'arrayref',
+				optional => 1,
+			}, 'allow_attributes' => {
+				type => 'hashref',
+				optional => 1,
+			}, 'strip_comments' => {
+				type => 'boolean',
+				optional => 1,
+			}, 'encode_invalid_tags' => {
+				type => 'boolean',
+				optional => 1,
+			}
+		}
+	});
+
+	return bless {
+		allow_tags => $params->{allow_tags} || [],
+		allow_attributes => $params->{allow_attributes} || {},
+		strip_comments => $params->{strip_comments} // 1, # Default to stripping comments
+		encode_invalid_tags => $params->{encode_invalid_tags} // 1, # Default to encoding invalid tags
+	}, $class;
 }
 
 =head2 sanitize($html)
@@ -131,7 +150,13 @@ Returns the sanitized HTML string.
 =cut
 
 sub sanitize {
-	my ($self, $html) = @_;
+	my $self = shift;
+	my $params = Params::Validate::Strict::validate_strict({
+		args => Params::Get::get_params('html', \@_),
+		schema => { html => { type => 'string' } }
+	});
+	my $html = $params->{'html'};
+
 	my $output = '';
 	my $skip_content = 0;
 	my @stack;
