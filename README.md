@@ -106,12 +106,23 @@ Returns the sanitized HTML string.
 This is a basic HTML sanitizer.
 For production environments, consider using more mature and actively maintained libraries like `http://htmlpurifier.org/` or [Mojolicious::Plugin::TagHelpers](https://metacpan.org/pod/Mojolicious%3A%3APlugin%3A%3ATagHelpers).
 
+# SUPPORT
+
+This module is provided as-is without any warranty.
+
 # AUTHOR
 
 Nigel Horne ` << njh @ nigelhorne.com `> >
 
-# COPYRIGHT AND LICENSE
+# LICENCE AND COPYRIGHT
 
 Copyright 2025 Nigel Horne
 
-This library is free software; you can redistribute it and/or modify it under the same terms as Perl itself.
+Usage is subject to licence terms.
+
+The licence terms of this software are as follows:
+
+- Personal single user, single computer use: GPL2
+- All other users (including Commercial, Charity, Educational, Government)
+  must apply in writing for a licence for use from Nigel Horne at the
+  above e-mail.

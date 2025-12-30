@@ -26,20 +26,7 @@ WriteMakefile(
 		'HTML::Entities' => 0,
 		'Params::Get' => 0,
 		'Params::Validate::Strict' => 0,
-	},
-	META_MERGE => {
-		resources => {
-			repository => {
-				type => 'git',
-				url => 'https://github.com/nigelhorne/HTML-Sanitizer.git',
-				web => 'https://github.com/nigelhorne/HTML-Sanitizer',
-			},
-			bugtracker => {
-				web => 'https://github.com/nigelhorne/HTML-Sanitizer/issues',
-			},
-		},
-	},
-	TEST_REQUIRES => {
+	}, TEST_REQUIRES => {
 		'Test::Compile' => 0,
 		'Test::DescribeMe' => 0,
 		'Test::Most' => 0,
@@ -47,4 +34,23 @@ WriteMakefile(
 		'Test::Warnings' => 0
 	}, dist => $dist,
 	clean => { FILES => 'HTML-Sanitizer-*' },	# Clean up distribution files
+	META_MERGE => {	# https://perldoc.perl.org/CPAN::Meta::Spec
+		'meta-spec' => { version => 2 },
+		resources => {
+			homepage => 'https://metacpan.org/pod/HTML::Sanitizer',
+			repository => {
+				repository => 'https://github.com/nigelhorne/HTML-Sanitizer',
+				type => 'git',
+				url => 'git://github.com/nigelhorne/HTML-Sanitizer.git',
+				web => 'https://github.com/nigelhorne/HTML-Sanitizer',
+				# license    => 'http://dev.perl.org/licenses/',
+			}, bugtracker => {
+				mailto => 'bug-HTML-Sanitizer@rt.cpan.org',
+				url => 'https://github.com/nigelhorne/HTML-Sanitizer/issues',
+				# web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=HTML-Sanitizer',
+				web => 'https://github.com/nigelhorne/HTML-Sanitizer/issues'
+			}
+		},
+	},
+	MIN_PERL_VERSION	=> '5.008'
 );
