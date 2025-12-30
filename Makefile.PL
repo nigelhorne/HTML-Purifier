@@ -12,10 +12,10 @@ if($^O eq 'darwin') {
 }
 
 WriteMakefile(
-	ABSTRACT_FROM => 'lib/HTML/Sanitizer.pm',
+	ABSTRACT_FROM => 'lib/HTML/Purifier.pm',
 	AUTHOR => 'Nigel Horne <njh@nigelhorne.com>',
-	NAME => 'HTML::Sanitizer',
-	VERSION_FROM => 'lib/HTML/Sanitizer.pm', # finds $VERSION in the module
+	NAME => 'HTML::Purifier',
+	VERSION_FROM => 'lib/HTML/Purifier.pm', # finds $VERSION in the module
 	((defined($ExtUtils::MakeMaker::VERSION) && ($ExtUtils::MakeMaker::VERSION >= 6.3002))
 		? ('LICENSE'=> 'GPL')
 		: ()),
@@ -33,22 +33,22 @@ WriteMakefile(
 		'Test::Needs' => 0,
 		'Test::Warnings' => 0
 	}, dist => $dist,
-	clean => { FILES => 'HTML-Sanitizer-*' },	# Clean up distribution files
+	clean => { FILES => 'HTML-Purifier-*' },	# Clean up distribution files
 	META_MERGE => {	# https://perldoc.perl.org/CPAN::Meta::Spec
 		'meta-spec' => { version => 2 },
 		resources => {
-			homepage => 'https://metacpan.org/pod/HTML::Sanitizer',
+			homepage => 'https://metacpan.org/pod/HTML::Purifier',
 			repository => {
-				repository => 'https://github.com/nigelhorne/HTML-Sanitizer',
+				repository => 'https://github.com/nigelhorne/HTML-Purifier',
 				type => 'git',
-				url => 'git://github.com/nigelhorne/HTML-Sanitizer.git',
-				web => 'https://github.com/nigelhorne/HTML-Sanitizer',
+				url => 'git://github.com/nigelhorne/HTML-Purifier.git',
+				web => 'https://github.com/nigelhorne/HTML-Purifier',
 				# license    => 'http://dev.perl.org/licenses/',
 			}, bugtracker => {
-				mailto => 'bug-HTML-Sanitizer@rt.cpan.org',
-				url => 'https://github.com/nigelhorne/HTML-Sanitizer/issues',
-				# web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=HTML-Sanitizer',
-				web => 'https://github.com/nigelhorne/HTML-Sanitizer/issues'
+				mailto => 'bug-HTML-Purifier@rt.cpan.org',
+				url => 'https://github.com/nigelhorne/HTML-Purifier/issues',
+				# web => 'https://rt.cpan.org/Public/Dist/Display.html?Name=HTML-Purifier',
+				web => 'https://github.com/nigelhorne/HTML-Purifier/issues'
 			}
 		},
 	},

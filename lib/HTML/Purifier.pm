@@ -1,4 +1,4 @@
-package HTML::Sanitizer;
+package HTML::Purifier;
 
 use strict;
 use warnings;
@@ -12,7 +12,7 @@ our $VERSION = '0.01';
 
 =head1 NAME
 
-HTML::Sanitizer - Basic HTML sanitization
+HTML::Purifier - Basic HTML purification
 
 =head1 VERSION
 
@@ -20,7 +20,7 @@ Version 0.01
 
 =head1 DESCRIPTION
 
-HTML::Sanitizer provides basic HTML sanitization capabilities.
+HTML::Purifier provides basic HTML purification capabilities.
 It allows you to define a whitelist of allowed tags and attributes, and it removes or encodes any HTML that is not on the whitelist.
 This helps to prevent cross-site scripting (XSS) vulnerabilities.
 
@@ -28,9 +28,9 @@ This helps to prevent cross-site scripting (XSS) vulnerabilities.
 
 =head2 Basic Usage
 
-  use HTML::Sanitizer;
+  use HTML::Purifier;
 
-  my $sanitizer = HTML::Sanitizer->new(
+  my $purifier = HTML::Purifier->new(
     allow_tags => [qw(p b i a)],
     allow_attributes => {
       a => [qw(href title)],
@@ -38,15 +38,15 @@ This helps to prevent cross-site scripting (XSS) vulnerabilities.
   );
 
   my $input_html = '<p><b>Hello, <script>alert("XSS");</script></b> <a href="javascript:void(0);">world</a></p>';
-  my $sanitized_html = $sanitizer->sanitize($input_html);
+  my $purified_html = $purifier->purify($input_html);
 
-  print $sanitized_html; # Output: <p><b>Hello, </b> <a href="world">world</a></p>
+  print $purified_html; # Output: <p><b>Hello, </b> <a href="world">world</a></p>
 
 =head2 Allowing Comments
 
-  use HTML::Sanitizer;
+  use HTML::Purifier;
 
-  my $sanitizer = HTML::Sanitizer->new(
+  my $purifier = HTML::Purifier->new(
     allow_tags => [qw(p b i a)],
     allow_attributes => {
       a => [qw(href title)],
@@ -55,15 +55,15 @@ This helps to prevent cross-site scripting (XSS) vulnerabilities.
   );
 
   my $input_html = '<p><b>Hello, </b></p>';
-  my $sanitized_html = $sanitizer->sanitize($input_html);
+  my $purified_html = $purifier->purify($input_html);
 
-  print $sanitized_html; # Output: <p><b>Hello, </b></p>
+  print $purified_html; # Output: <p><b>Hello, </b></p>
 
 =head2 Encoding Invalid Tags
 
-  use HTML::Sanitizer;
+  use HTML::Purifier;
 
-  my $sanitizer = HTML::Sanitizer->new(
+  my $ourified = HTML::Purifier->new(
     allow_tags => [qw(p b i a)],
     allow_attributes => {
       a => [qw(href title)],
@@ -72,15 +72,15 @@ This helps to prevent cross-site scripting (XSS) vulnerabilities.
   );
 
   my $input_html = '<my-custom-tag>Hello</my-custom-tag>';
-  my $sanitized_html = $sanitizer->sanitize($input_html);
+  my $purified_html = $purifier->purify($input_html);
 
-  print $sanitized_html; # Output: &lt;my-custom-tag&gt;Hello&lt;/my-custom-tag&gt;
+  print $purified_html; # Output: &lt;my-custom-tag&gt;Hello&lt;/my-custom-tag&gt;
 
 =head1 METHODS
 
 =head2 new(%args)
 
-Creates a new HTML::Sanitizer object.
+Creates a new HTML::Purifier object.
 
 =over 4
 
@@ -133,23 +133,23 @@ sub new {
 	}, $class;
 }
 
-=head2 sanitize($html)
+=head2 purify($html)
 
-Sanitizes the given HTML string.
+Purifies the given HTML string.
 
 =over 4
 
 =item $html
 
-The HTML string to be sanitized.
+The HTML string to be purified.
 
 =back
 
-Returns the sanitized HTML string.
+Returns the purified HTML string.
 
 =cut
 
-sub sanitize {
+sub purify {
 	my $self = shift;
 	my $params = Params::Validate::Strict::validate_strict({
 		args => Params::Get::get_params('html', \@_),
@@ -243,7 +243,7 @@ sub sanitize {
 
 =head1 CAVEATS
 
-This is a basic HTML sanitizer.
+This is a basic HTML purifier.
 For production environments, consider using more mature and actively maintained libraries like C<http://htmlpurifier.org/> or L<Mojolicious::Plugin::TagHelpers>.
 
 =head1 SUPPORT
