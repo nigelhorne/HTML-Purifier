@@ -1,5 +1,6 @@
 Changes
-lib/HTML/Sanitizer.pm
+cpanfile
+lib/HTML/Purifier.pm
 LICENSE
 Makefile.PL
 MANIFEST			This list of files
