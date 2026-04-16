@@ -6,6 +6,7 @@ requires 'Carp';
 requires 'ExtUtils::MakeMaker', '6.64';
 requires 'HTML::Entities';
 requires 'HTML::Parser';
+requires 'Object::Configure';
 requires 'Params::Get';
 requires 'Params::Validate::Strict';
 
