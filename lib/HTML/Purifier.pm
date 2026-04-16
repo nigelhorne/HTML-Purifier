@@ -5,6 +5,7 @@ use warnings;
 
 use HTML::Parser;
 use HTML::Entities qw(encode_entities);
+use Object::Configure;
 use Params::Get;
 use Params::Validate::Strict;
 
@@ -125,6 +126,8 @@ sub new {
 		}
 	});
 
+	$params = Object::Configure::configure($class, $params);
+
 	return bless {
 		allow_tags => $params->{allow_tags} || [],
 		allow_attributes => $params->{allow_attributes} || {},
@@ -188,7 +191,7 @@ sub purify {
 					push @stack, $lc_tag;
 				}
 				elsif ($self->{encode_invalid_tags}) {
-					$output .= encode_entities("<$tag" . (join " ", map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">");
+					$output .= encode_entities("<$tag" . (join ' ', map {$_ . "=\"" . encode_entities($attr->{$_}) . "\""} keys %$attr) . ">");
 				}
 			}, "tagname, attr, text"],
 
@@ -208,8 +211,7 @@ sub purify {
 						$output .= "</$lc_tag>";
 						pop @stack;
 					}
-				}
-				elsif ($self->{encode_invalid_tags}) {
+				} elsif ($self->{encode_invalid_tags}) {
 					$output .= encode_entities("</$tag>");
 				}
 			}, "tagname, text"],
